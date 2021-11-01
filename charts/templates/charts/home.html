@@ -1,0 +1,120 @@
+{% extends "charts/base.html" %}
+{% block content %}
+  <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto" class="border"></div>
+
+
+  <article class="media content-section">
+    <div class="media-body">
+      <h1>test</h1>
+      <!-- <div class="article-metadata">
+        <a class="mr-2" href="#">{{ post.author }}</a>
+        <small class="text-muted">{{ post.date_posted }}</small>
+      </div>
+      <h2><a class="article-title" href="#">{{ post.title }}</a></h2>
+      <p class="article-content">{{ post.content }}</p> -->
+    </div>
+  </article>
+
+  <script>
+document.addEventListener('DOMContentLoaded', function () {
+  Highcharts.getJSON('https://demo-live-data.highcharts.com/aapl-ohlcv.json', function (data) {
+    var stockData = {% autoescape off %}{{ xela|safe }}{% endautoescape %};
+
+
+// split the data set into ohlc and volume
+    var ohlc = [],
+        volume = [],
+        dataLength = stockData.length,
+        // set the allowed units for data grouping
+        groupingUnits = [[
+            'week',                         // unit name
+            [1, 2, 3, 4, 5]                             // allowed multiples
+        ], [
+            'month',
+            [1, 2, 3, 4, 6]
+        ]],
+
+        i = 0;
+
+    for (i; i < dataLength; i += 1) {
+      date = stockData[i]["date"]
+        ohlc.push([
+            stockData[i]["date"], // the date
+            stockData[i]["adjOpen"], // open
+            stockData[i]["adjHigh"], // high
+            stockData[i]["adjLow"], // low
+            stockData[i]["adjClose"] // close
+        ]);
+
+        volume.push([
+            stockData[i]["date"], // the date
+            stockData[i]["adjVolume"] // the volume
+        ]);
+    }
+
+    console.log(ohlc)
+
+
+    // create the chart
+    Highcharts.stockChart('container', {
+
+        rangeSelector: {
+            selected: 1
+        },
+
+        title: {
+            text: 'XELA Historical'
+        },
+
+        yAxis: [{
+            labels: {
+                align: 'right',
+                x: -3
+            },
+            title: {
+                text: 'OHLC'
+            },
+            height: '60%',
+            lineWidth: 2,
+            resize: {
+                enabled: true
+            }
+        }, {
+            labels: {
+                align: 'right',
+                x: -3
+            },
+            title: {
+                text: 'Volume'
+            },
+            top: '65%',
+            height: '35%',
+            offset: 0,
+            lineWidth: 2
+        }],
+
+        tooltip: {
+            split: true
+        },
+
+        series: [{
+            type: 'candlestick',
+            name: 'XELA',
+            data: ohlc,
+            dataGrouping: {
+                units: groupingUnits
+            }
+        }, {
+            type: 'column',
+            name: 'Volume',
+            data: volume,
+            yAxis: 1,
+            dataGrouping: {
+                units: groupingUnits
+            }
+        }]
+    });
+});
+    });
+  </script>
+{% endblock content %}
